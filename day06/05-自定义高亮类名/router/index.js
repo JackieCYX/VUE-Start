@@ -1,0 +1,21 @@
+import Find from '@/views/Find'
+import My from '@/views/My'
+import Friend from '@/views/Friend'
+
+import Vue from 'vue'
+import VueRouter from 'vue-router'
+Vue.use(VueRouter)
+
+// 创建一个路由对象
+const router = new VueRouter({
+    routes: [
+        { path: '/find', component: Find },
+        { path: '/my', component: My },
+        { path: '/friend', component: Friend },
+    ],
+    // link自定义高亮类名
+    linkActiveClass: 'active',
+    linkExactActiveClass: 'exact-active'
+})
+
+export default router
