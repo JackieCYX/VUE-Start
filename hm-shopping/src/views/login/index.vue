@@ -100,6 +100,8 @@ export default {
       }
       return true
     },
+
+    // 登录
     async login () {
       if (!this.validFn()) {
         return
@@ -108,9 +110,15 @@ export default {
         this.$toast('请输入正确的手机验证码')
         return
       }
+
+      console.log('发送登录请求')
+
       await codeLogin(this.mobile, this.msgCode)
-      this.$router.push('/')
-      this.$toast('登录成功')
+      this.$store.commit('user/setUserInfo', res.data)
+      this.$toast('登陆成功')
+
+      const url = this.$route.query.backUrl || '/'
+      this.$router.replace(url)
     }
   }
 }

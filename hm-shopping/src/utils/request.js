@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Toast } from 'vant'
+import {Toast} from 'vant'
 
 const request = axios.create({
   baseURL: 'http://cba.itlike.com/public/index.php?s=/api/',
@@ -7,8 +7,14 @@ const request = axios.create({
 })
 
 // 添加请求拦截器
-request.interceptors.request.use(function (config){
+request.interceptors.request.use(function (config) {
   // 在发送请求之前做什么
+  Toast.loading({
+    message: '请求中...',
+    forbidClick: true,
+    loadingType: 'spinner',
+    duration: 0
+  })
   return config
 }, function (error) {
   // 对请求错误做些什么
@@ -21,6 +27,9 @@ request.interceptors.response.use(function (response) {
   if (res.status !== 200) {
     Toast(res.message)
     return Promise.reject(res.message)
+  } else {
+    // 清除loading中的效果
+    Toast.clear()
   }
   // 对响应数据做点什么
   return res
