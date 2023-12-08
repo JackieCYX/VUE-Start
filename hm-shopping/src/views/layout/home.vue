@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <!-- 导航条 -->
-    <van-nav-bar title="智慧商城" fixed />
+    <van-nav-bar title="智慧商城" fixed/>
 
     <!-- 搜索框 -->
     <van-search
@@ -45,6 +45,31 @@
   </div>
 </template>
 
+<script>
+import GoodsItem from "@/components/GoodsItem.vue"
+import {getHomeData} from '@/api/home'
+
+export default {
+  name: 'HomePage',
+  components: {
+    GoodsItem
+  },
+  data() {
+    return {
+      bannerList: [], //轮播
+      navList: [], // 导航
+      proList: [] //商品
+    }
+  },
+  async created() {
+    const {data: {pageData}} = await getHomeData()
+    this.bannerList = pageData.items[1].data
+    this.navList = pageData.items[3].data
+    this.proList = pageData.items[6].data
+    console.log(this.proList)
+  }
+}
+</script>
 
 <style lang="less" scoped>
 // 主题 padding
@@ -57,6 +82,7 @@
 .van-nav-bar {
   z-index: 999;
   background-color: #c21401;
+
   ::v-deep .van-nav-bar__title {
     color: #fff;
   }
@@ -78,6 +104,7 @@
   text-align: center;
   background-color: #39a9ed;
 }
+
 .my-swipe .van-swipe-item img {
   width: 100%;
   height: 185px;
