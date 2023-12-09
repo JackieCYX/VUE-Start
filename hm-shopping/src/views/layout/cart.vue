@@ -58,6 +58,9 @@
   </div>
 </template>
 
+<script>
+
+</script>
 
 <style lang="less" scoped>
 // 主题 padding
