@@ -1,13 +1,13 @@
 <template>
   <div class="cart">
-    <van-nav-bar title="购物车" fixed />
+    <van-nav-bar title="购物车" fixed/>
 
     <div v-if="isLogin && cartList.length > 0">
       <!-- 购物车开头 -->
       <div class="cart-title">
         <span class="all">共<i>{{ cartTotal }}</i>件商品</span>
         <span class="edit" @click="isEdit = !isEdit">
-          <van-icon name="edit" />
+          <van-icon name="edit"/>
           编辑
         </span>
       </div>
@@ -15,7 +15,7 @@
       <!-- 购物车列表 -->
       <div class="cart-list">
         <div class="cart-item" v-for="item in cartList" :key="item.goods_id">
-          <van-checkbox @click="toggleCheck(item.goods_id)"  :value="item.isChecked"></van-checkbox>
+          <van-checkbox @click="toggleCheck(item.goods_id)" :value="item.isChecked"></van-checkbox>
           <div class="show">
             <img :src="item.goods.goods_image" alt="">
           </div>
@@ -24,7 +24,8 @@
             <span class="bottom">
               <div class="price">¥ <span>{{ item.goods.goods_price_min }}</span></div>
               <!-- 既希望保留原本的形参，又需要通过调用函数传参 => 箭头函数包装一层 -->
-              <CountBox @input="(value) => changeCount(value, item.goods_id, item.goods_sku_id)" :value="item.goods_num"></CountBox>
+              <CountBox @input="(value) => changeCount(value, item.goods_id, item.goods_sku_id)"
+                        :value="item.goods_num"></CountBox>
             </span>
           </div>
         </div>
@@ -32,7 +33,7 @@
 
       <div class="footer-fixed">
         <div @click="toggleAllCheck" class="all-check">
-          <van-checkbox :value="isAllChecked"  icon-size="18"></van-checkbox>
+          <van-checkbox :value="isAllChecked" icon-size="18"></van-checkbox>
           全选
         </div>
 
@@ -41,8 +42,11 @@
             <span>合计：</span>
             <span>¥ <i class="totalPrice">{{ selPrice }}</i></span>
           </div>
-          <div v-if="!isEdit" class="goPay" :class="{ disabled: selCount === 0 }"  @click="goPay">结算({{ selCount }})</div>
-          <div v-else @click="handleDel" class="delete" :class="{ disabled: selCount === 0 }" >删除</div>
+          <div v-if="!isEdit" class="goPay" :class="{ disabled: selCount === 0 }" @click="goPay">结算({{
+              selCount
+            }})
+          </div>
+          <div v-else @click="handleDel" class="delete" :class="{ disabled: selCount === 0 }">删除</div>
         </div>
       </div>
     </div>
@@ -59,7 +63,77 @@
 </template>
 
 <script>
+import CountBox from "@/components/CountBox.vue"
+import {mapGetters, mapState} from 'vuex'
 
+export default {
+  name: 'CartPage',
+  components: {
+    CountBox
+  },
+  data() {
+    return {
+      isEdit: false
+    }
+  },
+  computed: {
+    ...mapState('cart', ['cartList']),
+    ...mapGetters('cart', ['cartTotal', 'selCartList', 'selCount', 'selPrice', 'isAllChecked']),
+    isLogin() {
+      return this.$store.getters.token
+    }
+  },
+  created() {
+    // 必须是登录过的用户，才能用户购物车列表
+    if (this.isLogin) {
+      this.$store.dispatch('cart/getCartAction')
+    }
+  },
+  methods: {
+    toggleCheck(goodsId) {
+      this.$store.commit('cart/toggleCheck', goodsId)
+    },
+    toggleAllCheck() {
+      this.$store.commit('cart/toggleAllCheck', !this.isAllChecked)
+    },
+    changeCount(goodsNum, goodsId, goodsSkuId) {
+      // console.log(goodsNum, goodsId, goodsSkuId)
+      // 调用 vuex 的 action，进行数量的修改
+      this.$store.dispatch('cart/changeCountAction', {
+        goodsNum,
+        goodsId,
+        goodsSkuId
+      })
+    },
+    async handleDel() {
+      if (this.selCount === 0) return
+      await this.$store.dispatch('cart/delSelect')
+      this.isEdit = false
+    },
+    goPay() {
+      // 判断有没有选中商品
+      if (this.selCount > 0) {
+        // 有选中的 商品 才进行结算跳转
+        this.$router.push({
+          path: '/pay',
+          query: {
+            mode: 'cart',
+            cartIds: this.selCartList.map(item => item.id).join(',')
+          }
+        })
+      }
+    },
+    watch: {
+      isEdit(value) {
+        if (value) {
+          this.$store.commit('cart/toggleAllCheck', false)
+        } else {
+          this.$store.commit('cart/toggleAllCheck', true)
+        }
+      }
+    }
+  }
+}
 </script>
 
 <style lang="less" scoped>
@@ -69,6 +143,7 @@
   padding-bottom: 100px;
   background-color: #f5f5f5;
   min-height: 100vh;
+
   .cart-title {
     height: 40px;
     display: flex;
@@ -76,6 +151,7 @@
     align-items: center;
     padding: 0 10px;
     font-size: 14px;
+
     .all {
       i {
         font-style: normal;
@@ -84,6 +160,7 @@
         font-size: 16px;
       }
     }
+
     .edit {
       .van-icon {
         font-size: 18px;
@@ -103,6 +180,7 @@
       width: 100px;
       height: 100px;
     }
+
     .info {
       width: 210px;
       padding: 10px 5px;
@@ -114,18 +192,22 @@
       .bottom {
         display: flex;
         justify-content: space-between;
+
         .price {
           display: flex;
           align-items: flex-end;
           color: #fa2209;
           font-size: 12px;
+
           span {
             font-size: 16px;
           }
         }
+
         .count-box {
           display: flex;
           width: 110px;
+
           .add,
           .minus {
             width: 30px;
@@ -133,6 +215,7 @@
             outline: none;
             border: none;
           }
+
           .inp {
             width: 40px;
             height: 30px;
@@ -164,6 +247,7 @@
   .all-check {
     display: flex;
     align-items: center;
+
     .van-checkbox {
       margin-right: 5px;
     }
@@ -172,9 +256,11 @@
   .all-total {
     display: flex;
     line-height: 36px;
+
     .price {
       font-size: 14px;
       margin-right: 10px;
+
       .totalPrice {
         color: #fa2209;
         font-size: 18px;
@@ -190,6 +276,7 @@
       background-color: #fa2f21;
       color: #fff;
       border-radius: 18px;
+
       &.disabled {
         background-color: #ff9779;
       }
@@ -200,17 +287,20 @@
 
 .empty-cart {
   padding: 80px 30px;
+
   img {
     width: 140px;
     height: 92px;
     display: block;
     margin: 0 auto;
   }
+
   .tips {
     text-align: center;
     color: #666;
     margin: 30px;
   }
+
   .btn {
     width: 110px;
     height: 32px;
